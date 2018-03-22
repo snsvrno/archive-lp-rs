@@ -5,33 +5,39 @@ use std::path::PathBuf;
 use std::fs::File;
 use std::io::{Cursor,Read,Write};
 
+use shared;
+
 pub fn unzip(file : &PathBuf, des : &PathBuf) -> Result<PathBuf,&'static str> {
   output_debug!("Processing as a zip");
 
-  let mut buf : Vec<u8> = Vec::new();
-  let zip_file = File::open(&file);
-  match zip_file {
-    Err(error) => { output_error!("Cannot openning file {}: {}",Red.paint(file.display().to_string()),Yellow.paint(error.to_string())); }
-    Ok(mut zip_file) => { 
-      match zip_file.read_to_end(&mut buf){
-        Err(error) => { output_error!("Cannot  reading \'{}\''s buffer: {} ",Red.paint(file.display().to_string()),Yellow.paint(error.to_string())); },
-        Ok (result) => { output_debug!("File buffer read successfully from {}: {}",Blue.paint(file.display().to_string()),Green.paint(result.to_string()));}
-      }
+  if let Some(buf) = shared::get_file_contents(&file) {
+    match unzip_buffer(&buf,&des,Some("love.exe")) {
+      Some(path) => { return Ok(path); },
+      None => { },
     }
   }
 
-  let archive = zipcrate::ZipArchive::new(Cursor::new(buf));
+  Err("Failed to extract")
+}
+
+pub fn unzip_buffer(buffer : &Vec<u8>, des : &PathBuf, root_file : Option<&str>) -> Option<PathBuf> {
+  let archive = zipcrate::ZipArchive::new(Cursor::new(buffer));
   match archive {
-    Err(error) => { output_error!("Cannot read archive file \'{}\''s stream buffer: {}",Red.paint(file.display().to_string()),Yellow.paint(error.to_string()));  }
+    Err(error) => { 
+      output_error!("Cannot read archive file stream buffer: {}",Yellow.paint(error.to_string()));
+      return None;  
+    }
     Ok(mut archive) => {
       
       let mut root_length = 0;
-      for i in 0..archive.len() {
-        if let Ok(mut file) = archive.by_index(i) {
-          if file.name().contains("love.exe") {
-            root_length = file.name().len()-8;
-            let new_length : String = file.name()[root_length..].to_string();
-            output_debug!("Found love.exe in archive, calculating root_length ({}) which gives a new path of {} for love.exe",Blue.paint(root_length.to_string()),Blue.paint(new_length));
+      if let Some(root_file) = root_file {
+        for i in 0..archive.len() {
+          if let Ok(mut file) = archive.by_index(i) {
+            if file.name().contains(&root_file) {
+              root_length = file.name().len()-8;
+              let new_length : String = file.name()[root_length..].to_string();
+              output_debug!("Found love.exe in archive, calculating root_length ({}) which gives a new path of {} for love.exe",Blue.paint(root_length.to_string()),Blue.paint(new_length));
+            }
           }
         }
       }
@@ -61,9 +67,7 @@ pub fn unzip(file : &PathBuf, des : &PathBuf) -> Result<PathBuf,&'static str> {
 
         }
       }
-      return Ok(des.clone());
+      return Some(des.clone());
     }
   } 
-
-  Err("Failed to extract")
 }

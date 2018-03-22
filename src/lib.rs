@@ -1,9 +1,14 @@
 #[macro_use]
 extern crate output;
+extern crate flate2;
+extern crate tar as tarcrate;
 extern crate zip as zipcrate;
 extern crate ansi_term; use ansi_term::Colour::{Red,Yellow,Blue};
 
+mod shared;
 mod zip;
+mod gz;
+mod tar;
 
 use std::path::PathBuf;
 use std::fs::{create_dir_all,remove_dir_all};
@@ -30,6 +35,7 @@ pub fn extract_to(src : &PathBuf, des : &PathBuf) -> Result<PathBuf,&'static str
     Some(ext) => { 
       match ext.to_str().unwrap() {
         "zip" => { return zip::unzip(&src,&des); },
+        "gz" => { return gz::unzip(&src,&des); }
         ext => { output_error!("Unknown extension type {}",Yellow.paint(ext)); }
       }
     }

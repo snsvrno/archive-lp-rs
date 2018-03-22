@@ -4,7 +4,9 @@ version = "0.1.0"
 authors = ["snsvrno <snsvrno@tuta.io>"]
 
 [dependencies]
-zip = "0.3.0"
 ansi_term = "0.10.2"
+flate2 = "1.0.1"
+zip = "0.3.0"
+tar = "0.4.14"
 
 output = { git = "https://github.com/Snsvrno/output-lp-rs", tag = "0.1.0" }
