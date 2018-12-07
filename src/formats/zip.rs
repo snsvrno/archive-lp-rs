@@ -7,25 +7,81 @@ use std::io::{Cursor,Read,Write};
 use zipcrate;
 
 pub fn unzip(file : &PathBuf, des : &PathBuf) -> Result<PathBuf,Error> {
-
     let mut buffer : Vec<u8> = Vec::new();
     let mut archive = fs::File::open(&file)?;
     archive.read_to_end(&mut buffer)?;
 
-    unzip_buffer(&buffer,des)
+    unzip_buffer(&buffer,des,false)
 }
 
-pub fn unzip_buffer(buffer : &Vec<u8>, des : &PathBuf) -> Result<PathBuf,Error> {
+pub fn unzip_root(file : &PathBuf, des : &PathBuf) -> Result<PathBuf,Error> {
+    let mut buffer : Vec<u8> = Vec::new();
+    let mut archive = fs::File::open(&file)?;
+    archive.read_to_end(&mut buffer)?;
+
+    unzip_buffer(&buffer,des,true)
+}
+
+fn unzip_buffer(buffer : &Vec<u8>, des : &PathBuf,root : bool) -> Result<PathBuf,Error> {
     let mut archive = zipcrate::ZipArchive::new(Cursor::new(buffer))?;
+    let mut root_length = 0;
+
+    // attempts to determine if the zip is actually inside redundant
+    // folders, so we want to have the root of all the actual files
+    // not just a folder with all the files inside of it.
+    if root {
+        for i in 0 .. archive.len() {
+
+            let mut file = archive.by_index(i)?;
+
+            // checks if its a folder or a file
+            // checks to see if the path ends in '/', then its a folder
+            if file.name().chars().last().unwrap() == "/".to_string().chars().last().unwrap() {
+                continue;
+            } 
+
+            // a mess of code that tries to get the length of the folders 
+            // in front of the file name, the intent is to find the file 
+            // with the smallest amount of folders, and then that is the 
+            // true root of the archive.
+            {
+                let mut splits = file.name().split("/");
+                let count = splits.clone().count() - 1;
+                let mut length = 0;
+                for _ in 0 .. count {
+                    if let Some(part) = splits.next() {
+                        length += part.len() + 1;
+                    }
+                }
+
+                if root_length < length {
+                    root_length = length;
+                }
+            }
+        }
+    }
 
     for i in 0 .. archive.len() {
         if let Ok(mut file_in_zip) = archive.by_index(i) {
+
+            // checks if its a folder or a file
+            // checks to see if the path ends in '/', then its a folder
+            if file_in_zip.name().chars().last().unwrap() == "/".to_string().chars().last().unwrap() {
+                continue;
+            } 
+
             let mut new_file_path = des.clone();
-            new_file_path.push(file_in_zip.name().to_string());
+            new_file_path.push(file_in_zip.name()[root_length..].to_string());
 
             let mut file_buf : Vec<u8> = Vec::new();
-            let size = file_in_zip.read_to_end(&mut file_buf)?;
+            file_in_zip.read_to_end(&mut file_buf)?;
 
+            // needs to create the folders, in case there are folders too
+            if let Some(parent) = new_file_path.parent() {
+                fs::create_dir_all(parent)?;
+            }
+
+            // creates the file now.
             let mut new_file = fs::File::create(&new_file_path)?;
             new_file.write_all(&file_buf)?;
         }
