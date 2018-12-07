@@ -1,12 +1,13 @@
 [package]
-name = "archive"
-version = "0.1.0"
+name = "archive-lp"
+version = "0.2.0"
 authors = ["snsvrno <snsvrno@tuta.io>"]
 
 [dependencies]
-ansi_term = "0.10.2"
-flate2 = "1.0.1"
-zip = "0.3.0"
-tar = "0.4.14"
+ansi_term = "0.11"
+flate2 = "1.0"
+zip = "0.5"
+tar = "0.4"
 
-output = { git = "https://github.com/Snsvrno/output-lp-rs", tag = "0.1.0" }
+failure = "0.1"
+log = "0.4"

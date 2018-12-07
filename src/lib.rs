@@ -1,49 +1,36 @@
-#[macro_use]
-extern crate output;
-extern crate flate2;
-extern crate tar as tarcrate;
+#[macro_use] extern crate failure; use failure::Error;
+#[macro_use] extern crate log;
+
 extern crate zip as zipcrate;
-extern crate ansi_term; use ansi_term::Colour::{Red,Yellow,Blue};
 
-mod shared;
-mod zip;
-mod gz;
-mod tar;
+use std::path::{PathBuf, Path};
+use std::fs;
 
-use std::path::PathBuf;
-use std::fs::{create_dir_all,remove_dir_all};
+mod formats;
 
-pub fn extract_to(src : &PathBuf, des : &PathBuf) -> Result<PathBuf,&'static str> {
-  if !src.exists() { output_error!("File {} does not exist",Red.paint(src.display().to_string())); return Err("File does not exist"); }
+pub fn extract_to_root<P:AsRef<Path>>(src : P, des : P) -> Result<PathBuf,Error>
+    where std::path::PathBuf: std::convert::From<P>, P : std::fmt::Display + Copy, 
+{
+    let src_path : PathBuf = PathBuf::from(src);
+    let des_path : PathBuf = PathBuf::from(des);
 
-  if des.exists() {
-    match remove_dir_all(&des) {
-      Err(error) => { output_error!("Cannot delete \'{}\': {}",Red.paint(des.display().to_string()),Yellow.paint(error.to_string())); }
-      Ok(_) => { output_debug!("\'{}\' already exists, deleteing it a recreating it.",Blue.paint(des.display().to_string())); }
-    }
-  }
-
-  if !des.exists() {
-    match create_dir_all(&des) {
-      Err(error) => { output_error!("Cannot create \'{}\': {}",Red.paint(des.display().to_string()),Yellow.paint(error.to_string())); }
-      Ok(_) => { output_debug!("\'{}\' created.",Blue.paint(des.display().to_string())); }
-    }
-  }
-
-  match src.extension() {
-    None => { output_error!("File {} has no extension, not a file?",Red.paint(src.display().to_string())); return Err("File doesn't have extension"); }
-    Some(ext) => { 
-      match ext.to_str().unwrap() {
-        "zip" => { return zip::unzip(&src,&des); },
-        "gz" => { return gz::unzip(&src,&des); }
-        ext => { output_error!("Unknown extension type {}",Yellow.paint(ext)); }
-      }
+    if false == src_path.exists() { 
+        return Err(format_err!("Source file, '{}' does not exist.",src)); 
     }
 
-  }
+    if false == des_path.exists() { 
+        warn!("Destination '{}' does not exist.",src);
+        fs::create_dir_all(&des_path)?;
+    }
 
-
-
-
-  Err("didn't extract")
+    match src_path.extension() {
+        None => Err(format_err!("File '{}' has no extension, not a file?",src)),
+        Some(ext) => { 
+            match ext.to_str().unwrap() {
+                "zip" => formats::zip::unzip(&src_path,&des_path),
+                // "gz" => { return gz::unzip(&src,&des); }
+                ext => Err(format_err!("Unknown extension type {}",ext)),
+            }
+        } 
+    }
 }
