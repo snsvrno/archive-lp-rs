@@ -15,15 +15,15 @@ fn extract_a_file() {
 }
 
 #[test]
-fn extract_a_file() {
+fn extract_a_file_1() {
     assert!(archive::extract_to("tests/1-folder-nest.zip", "tests/").is_ok());
     
     let extracted_file_path = PathBuf::from("tests/a_folder/a_file");
     assert!(extracted_file_path.exists());
 
     // cleanup
-    fs::remove_file(extracted_file_path);
-    fs::remove_dir(extracted_file_path.parent().unwrap);
+    fs::remove_file(&extracted_file_path);
+    fs::remove_dir(&extracted_file_path.parent().unwrap());
 }
 
 #[test]
