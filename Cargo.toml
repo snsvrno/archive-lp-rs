@@ -3,11 +3,23 @@ name = "archive-lp"
 version = "0.2.0"
 authors = ["snsvrno <snsvrno@tuta.io>"]
 
+license = "MIT"
+description = "a library for easy interaction with multiple archive formats."
+repository = "https://github.com/snsvrno/archive-lp-rs"
+readme = "README.md"
+keywords = ["archive","xz","tar","gz","zip"]
+categories = ["filesystem"]
+
+exclude = [
+    "/tests"
+]
+
 [dependencies]
 ansi_term = "0.11"
 flate2 = "1.0"
 zip = "0.5"
 tar = "0.4"
+xz2 = "0.1"
 
 failure = "0.1"
 log = "0.4"
