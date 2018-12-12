@@ -4,8 +4,8 @@ use std::fs;
 use std::path::PathBuf;
 
 #[test]
-fn zip_extract_a_file() {
-    assert!(archive::extract_to("tests/test_archives/a-file.zip", "tests/").is_ok());
+fn gz_tar_extract_a_file() {
+    assert!(archive::extract_to("tests/test_archives/a-file.tar.gz", "tests/").is_ok());
     
     let extracted_file_path = PathBuf::from("tests/a_file");
     assert!(extracted_file_path.exists());
@@ -15,8 +15,8 @@ fn zip_extract_a_file() {
 }
 
 #[test]
-fn zip_extract_a_file_1() {
-    assert!(archive::extract_to("tests/test_archives/1-folder-nest.zip", "tests/").is_ok());
+fn gz_tar_extract_a_file_1() {
+    assert!(archive::extract_to("tests/test_archives/1-folder-nest.tar.gz", "tests/").is_ok());
     
     let extracted_file_path = PathBuf::from("tests/a_folder/a_file");
     assert!(extracted_file_path.exists());
@@ -27,8 +27,8 @@ fn zip_extract_a_file_1() {
 }
 
 #[test]
-fn zip_extract_a_file_root_2() {
-    assert!(archive::extract_root_to("tests/test_archives/2-folders-nest.zip", "tests/").is_ok());
+fn gz_tar_extract_a_file_root_2() {
+    assert!(archive::extract_root_to("tests/test_archives/2-folders-nest.tar.gz", "tests/").is_ok());
     
     let extracted_file_path = PathBuf::from("tests/a_file");
     assert!(extracted_file_path.exists());
@@ -38,8 +38,8 @@ fn zip_extract_a_file_root_2() {
 }
 
 #[test]
-fn zip_extract_a_file_root_1() {
-    assert!(archive::extract_root_to("tests/test_archives/1-folder-nest.zip", "tests/").is_ok());
+fn gz_tar_extract_a_file_root_1() {
+    assert!(archive::extract_root_to("tests/test_archives/1-folder-nest.tar.gz", "tests/").is_ok());
     
     let extracted_file_path = PathBuf::from("tests/a_file");
     assert!(extracted_file_path.exists());
@@ -49,8 +49,8 @@ fn zip_extract_a_file_root_1() {
 }
 
 #[test]
-fn zip_extract_a_file_root() {
-    assert!(archive::extract_root_to("tests/test_archives/a-file.zip", "tests/").is_ok());
+fn gz_tar_extract_a_file_root() {
+    assert!(archive::extract_root_to("tests/test_archives/a-file.tar.gz", "tests/").is_ok());
     
     let extracted_file_path = PathBuf::from("tests/a_file");
     assert!(extracted_file_path.exists());
@@ -61,20 +61,20 @@ fn zip_extract_a_file_root() {
 
 
 #[test]
-fn zip_check_file() {
-    match archive::archive_contains_file("tests/test_archives/a-file.zip", "a_file") {
+fn gz_tar_check_file() {
+    match archive::archive_contains_file("tests/test_archives/a-file.tar.gz", "a_file") {
         Ok(result) => assert!(result),
         Err(_) => assert!(false),
     }
-    match archive::archive_contains_file("tests/test_archives/1-folder-nest.zip", "a_file") {
+    match archive::archive_contains_file("tests/test_archives/1-folder-nest.tar.gz", "a_file") {
         Ok(result) => assert!(result),
         Err(_) => assert!(false),
     }
-    match archive::archive_contains_file("tests/test_archives/2-folders-nest.zip", "a_file") {
+    match archive::archive_contains_file("tests/test_archives/2-folders-nest.tar.gz", "a_file") {
         Ok(result) => assert!(result),
         Err(_) => assert!(false),
     }
-    match archive::archive_contains_file("tests/test_archives/2-folders-nest.zip", "a_files") {
+    match archive::archive_contains_file("tests/test_archives/2-folders-nest.tar.gz", "a_files") {
         Ok(result) => assert!(result == false),
         Err(_) => assert!(false),
     }

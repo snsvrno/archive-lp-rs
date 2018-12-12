@@ -2,6 +2,8 @@
 #[macro_use] extern crate log;
 
 extern crate zip as zipcrate;
+extern crate flate2;
+extern crate tar as tarcrate;
 
 use std::path::{PathBuf, Path};
 use std::fs;
@@ -21,7 +23,15 @@ pub fn archive_contains_file<P:AsRef<Path>>(src : P, file : &str) -> Result<bool
         Some(ext) => { 
             match ext.to_str().unwrap() {
                 "zip" => formats::zip::contains(&src_path,file),
-                // "gz" => { return gz::unzip(&src,&des); }
+                "tar" => formats::tar::contains(&src_path,file),
+                "gz" => { 
+                    let buffer = formats::gz::decode(&src_path)?;
+                    match get_second_extension(src_path.file_name().unwrap().to_str().unwrap()){
+                        Some("tar") => formats::tar::buffer_contains(&buffer,file),
+                        Some(other_ext) => Err(format_err!("Unknown format {}",other_ext)),
+                        None => Err(format_err!("No nested archive")),
+                    }
+                },
                 ext => Err(format_err!("Unknown extension type {}",ext)),
             }
         } 
@@ -53,8 +63,16 @@ pub fn extract_to<P:AsRef<Path>>(src : P, des : P) -> Result<PathBuf,Error>
         None => Err(format_err!("File '{}' has no extension, not a file?",src)),
         Some(ext) => { 
             match ext.to_str().unwrap() {
-                "zip" => formats::zip::unzip(&src_path,&des_path),
-                // "gz" => { return gz::unzip(&src,&des); }
+                "zip" => formats::zip::extract(&src_path,&des_path),
+                "tar" => formats::tar::extract(&src_path,&des_path),
+                "gz" => { 
+                    let buffer = formats::gz::decode(&src_path)?;
+                    match get_second_extension(src_path.file_name().unwrap().to_str().unwrap()){
+                        Some("tar") => formats::tar::extract_buffer(&buffer,&des_path,false),
+                        Some(other_ext) => Err(format_err!("Unknown format {}",other_ext)),
+                        None => Err(format_err!("No nested archive")),
+                    }
+                },
                 ext => Err(format_err!("Unknown extension type {}",ext)),
             }
         } 
@@ -96,10 +114,30 @@ pub fn extract_root_to<P:AsRef<Path>>(src : P, des : P) -> Result<PathBuf,Error>
         None => Err(format_err!("File '{}' has no extension, not a file?",src)),
         Some(ext) => { 
             match ext.to_str().unwrap() {
-                "zip" => formats::zip::unzip_root(&src_path,&des_path),
-                // "gz" => { return gz::unzip(&src,&des); }
+                "zip" => formats::zip::extract_root(&src_path,&des_path),
+                "tar" => formats::tar::extract_root(&src_path,&des_path),
+                "gz" => { 
+                    let buffer = formats::gz::decode(&src_path)?;
+                    match get_second_extension(src_path.file_name().unwrap().to_str().unwrap()){
+                        Some("tar") => formats::tar::extract_buffer(&buffer,&des_path,true),
+                        Some(other_ext) => Err(format_err!("Unknown format {}",other_ext)),
+                        None => Err(format_err!("No nested archive")),
+                    }
+                },
                 ext => Err(format_err!("Unknown extension type {}",ext)),
             }
         } 
+    }
+}
+
+fn get_second_extension<'a>(file : &'a str) -> Option<&'a str> {
+    //! gets the second extenison, so aa.b.c then it returns b
+    
+    let splits = file.split(".").collect::<Vec<&str>>();
+
+    if splits.len() >= 3 {
+        Some(splits[splits.len()-2])
+    } else {
+        None
     }
 }

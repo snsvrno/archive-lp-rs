@@ -8,24 +8,24 @@ use std::io::{Cursor,Read,Write};
 
 use zipcrate;
 
-pub fn unzip(file : &PathBuf, des : &PathBuf) -> Result<PathBuf,Error> {
+pub fn extract(file : &PathBuf, des : &PathBuf) -> Result<PathBuf,Error> {
     //! unzips the archive to the destination folder.
     
     let mut buffer : Vec<u8> = Vec::new();
     let mut archive = fs::File::open(&file)?;
     archive.read_to_end(&mut buffer)?;
 
-    unzip_buffer(&buffer,des,false)
+    extract_buffer(&buffer,des,false)
 }
 
-pub fn unzip_root(file : &PathBuf, des : &PathBuf) -> Result<PathBuf,Error> {
+pub fn extract_root(file : &PathBuf, des : &PathBuf) -> Result<PathBuf,Error> {
     //! unzips the archive's root to the destination folder.
     
     let mut buffer : Vec<u8> = Vec::new();
     let mut archive = fs::File::open(&file)?;
     archive.read_to_end(&mut buffer)?;
 
-    unzip_buffer(&buffer,des,true)
+    extract_buffer(&buffer,des,true)
 }
 
 pub fn contains(archive : &PathBuf, file_name : &str) -> Result<bool,Error> {
@@ -57,7 +57,7 @@ pub fn contains(archive : &PathBuf, file_name : &str) -> Result<bool,Error> {
     Ok(false)
 }
 
-fn unzip_buffer(buffer : &Vec<u8>, des : &PathBuf,root : bool) -> Result<PathBuf,Error> {
+pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<PathBuf,Error> {
     let mut archive = zipcrate::ZipArchive::new(Cursor::new(buffer))?;
     let mut root_length = 0;
 
