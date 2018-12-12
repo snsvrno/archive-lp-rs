@@ -1,3 +1,5 @@
+/// working with zip files, using 'zip-rs'
+
 use failure::Error;
 
 use std::fs;
@@ -7,6 +9,8 @@ use std::io::{Cursor,Read,Write};
 use zipcrate;
 
 pub fn unzip(file : &PathBuf, des : &PathBuf) -> Result<PathBuf,Error> {
+    //! unzips the archive to the destination folder.
+    
     let mut buffer : Vec<u8> = Vec::new();
     let mut archive = fs::File::open(&file)?;
     archive.read_to_end(&mut buffer)?;
@@ -15,11 +19,42 @@ pub fn unzip(file : &PathBuf, des : &PathBuf) -> Result<PathBuf,Error> {
 }
 
 pub fn unzip_root(file : &PathBuf, des : &PathBuf) -> Result<PathBuf,Error> {
+    //! unzips the archive's root to the destination folder.
+    
     let mut buffer : Vec<u8> = Vec::new();
     let mut archive = fs::File::open(&file)?;
     archive.read_to_end(&mut buffer)?;
 
     unzip_buffer(&buffer,des,true)
+}
+
+pub fn contains(archive : &PathBuf, file_name : &str) -> Result<bool,Error> {
+    //! checks if a file is in the archive.
+    //! 
+    //! 
+    let mut buffer : Vec<u8> = Vec::new();
+    let mut archive_file = fs::File::open(&archive)?;
+    archive_file.read_to_end(&mut buffer)?;
+
+    let mut zip = zipcrate::ZipArchive::new(Cursor::new(buffer))?;
+
+    for i in 0 .. zip.len() {
+        let mut file = zip.by_index(i)?;
+
+        // checks if its a folder or a file
+        // checks to see if the path ends in '/', then its a folder
+        if file.name().chars().last().unwrap() == "/".to_string().chars().last().unwrap() {
+            continue;
+        }
+
+        // gets the actual filename
+        let filename = file.name().split("/").collect::<Vec<_>>();
+        if filename[filename.len()-1] == file_name { 
+            return Ok(true); 
+        }
+    }
+
+    Ok(false)
 }
 
 fn unzip_buffer(buffer : &Vec<u8>, des : &PathBuf,root : bool) -> Result<PathBuf,Error> {
