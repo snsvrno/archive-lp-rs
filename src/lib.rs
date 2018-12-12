@@ -11,12 +11,11 @@ use std::fs;
 
 mod formats;
 
-pub fn archive_contains_file<P:AsRef<Path>>(src : P, file : &str) -> Result<bool,Error>
+pub fn contains_file<P:AsRef<Path>>(src : P, file : &str) -> Result<bool,Error>
     where std::path::PathBuf: std::convert::From<P>, P : std::fmt::Display + Copy,  
 {
     //! Checks if a certain file is in an archive.
-    
-    
+        
     let src_path : PathBuf = PathBuf::from(src);
     
     match src_path.extension() {

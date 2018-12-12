@@ -62,19 +62,19 @@ fn zip_extract_a_file_root() {
 
 #[test]
 fn zip_check_file() {
-    match archive::archive_contains_file("tests/test_archives/a-file.zip", "a_file") {
+    match archive::contains_file("tests/test_archives/a-file.zip", "a_file") {
         Ok(result) => assert!(result),
         Err(_) => assert!(false),
     }
-    match archive::archive_contains_file("tests/test_archives/1-folder-nest.zip", "a_file") {
+    match archive::contains_file("tests/test_archives/1-folder-nest.zip", "a_file") {
         Ok(result) => assert!(result),
         Err(_) => assert!(false),
     }
-    match archive::archive_contains_file("tests/test_archives/2-folders-nest.zip", "a_file") {
+    match archive::contains_file("tests/test_archives/2-folders-nest.zip", "a_file") {
         Ok(result) => assert!(result),
         Err(_) => assert!(false),
     }
-    match archive::archive_contains_file("tests/test_archives/2-folders-nest.zip", "a_files") {
+    match archive::contains_file("tests/test_archives/2-folders-nest.zip", "a_files") {
         Ok(result) => assert!(result == false),
         Err(_) => assert!(false),
     }

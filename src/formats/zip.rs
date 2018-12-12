@@ -30,8 +30,7 @@ pub fn extract_root(file : &PathBuf, des : &PathBuf) -> Result<PathBuf,Error> {
 
 pub fn contains(archive : &PathBuf, file_name : &str) -> Result<bool,Error> {
     //! checks if a file is in the archive.
-    //! 
-    //! 
+
     let mut buffer : Vec<u8> = Vec::new();
     let mut archive_file = fs::File::open(&archive)?;
     archive_file.read_to_end(&mut buffer)?;

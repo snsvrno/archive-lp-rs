@@ -8,6 +8,7 @@ use std::io::Read;
 use flate2;
 
 pub fn decode(file : &PathBuf) -> Result<Vec<u8>,Error> {
+    //! decodes a gz stream
 
     let mut buffer : Vec<u8> = Vec::new();
     let mut archive = fs::File::open(&file)?;
