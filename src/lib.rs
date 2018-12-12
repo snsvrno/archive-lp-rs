@@ -2,6 +2,7 @@
 #[macro_use] extern crate log;
 
 extern crate zip as zipcrate;
+extern crate xz2;
 extern crate flate2;
 extern crate tar as tarcrate;
 
@@ -26,6 +27,14 @@ pub fn archive_contains_file<P:AsRef<Path>>(src : P, file : &str) -> Result<bool
                 "tar" => formats::tar::contains(&src_path,file),
                 "gz" => { 
                     let buffer = formats::gz::decode(&src_path)?;
+                    match get_second_extension(src_path.file_name().unwrap().to_str().unwrap()){
+                        Some("tar") => formats::tar::buffer_contains(&buffer,file),
+                        Some(other_ext) => Err(format_err!("Unknown format {}",other_ext)),
+                        None => Err(format_err!("No nested archive")),
+                    }
+                },
+                "xz" => { 
+                    let buffer = formats::xz::decode(&src_path)?;
                     match get_second_extension(src_path.file_name().unwrap().to_str().unwrap()){
                         Some("tar") => formats::tar::buffer_contains(&buffer,file),
                         Some(other_ext) => Err(format_err!("Unknown format {}",other_ext)),
@@ -67,6 +76,14 @@ pub fn extract_to<P:AsRef<Path>>(src : P, des : P) -> Result<PathBuf,Error>
                 "tar" => formats::tar::extract(&src_path,&des_path),
                 "gz" => { 
                     let buffer = formats::gz::decode(&src_path)?;
+                    match get_second_extension(src_path.file_name().unwrap().to_str().unwrap()){
+                        Some("tar") => formats::tar::extract_buffer(&buffer,&des_path,false),
+                        Some(other_ext) => Err(format_err!("Unknown format {}",other_ext)),
+                        None => Err(format_err!("No nested archive")),
+                    }
+                },
+                "xz" => { 
+                    let buffer = formats::xz::decode(&src_path)?;
                     match get_second_extension(src_path.file_name().unwrap().to_str().unwrap()){
                         Some("tar") => formats::tar::extract_buffer(&buffer,&des_path,false),
                         Some(other_ext) => Err(format_err!("Unknown format {}",other_ext)),
@@ -118,6 +135,14 @@ pub fn extract_root_to<P:AsRef<Path>>(src : P, des : P) -> Result<PathBuf,Error>
                 "tar" => formats::tar::extract_root(&src_path,&des_path),
                 "gz" => { 
                     let buffer = formats::gz::decode(&src_path)?;
+                    match get_second_extension(src_path.file_name().unwrap().to_str().unwrap()){
+                        Some("tar") => formats::tar::extract_buffer(&buffer,&des_path,true),
+                        Some(other_ext) => Err(format_err!("Unknown format {}",other_ext)),
+                        None => Err(format_err!("No nested archive")),
+                    }
+                },
+                "xz" => { 
+                    let buffer = formats::xz::decode(&src_path)?;
                     match get_second_extension(src_path.file_name().unwrap().to_str().unwrap()){
                         Some("tar") => formats::tar::extract_buffer(&buffer,&des_path,true),
                         Some(other_ext) => Err(format_err!("Unknown format {}",other_ext)),
