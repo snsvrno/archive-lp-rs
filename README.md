@@ -4,6 +4,14 @@ Rust library for working with archives, designed for Lovepack. Takes much of the
 
 ## Functionality
 
-Can do the following for ***.zip*** files.
+Knows what to do for the following files
 
-- extract an archive to a folder.
+- *.zip
+- *.tar.gz
+- *.tar.xz
+
+Can do the following
+
+- extract archive to a directory: **archive_lp::extract_to()**
+- extract root of an archive to a directory: **archive_lp::extract_root_to()**
+- check if a file is in an archive: **archive_lp::contains_file()**
