@@ -61,7 +61,7 @@ pub fn buffer_contains(buffer : &Vec<u8>, file_name : &str) -> Result<bool,Error
 
 pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<PathBuf,Error> {
     let mut archive = tarcrate::Archive::new(&buffer[..]);
-    let mut root_length = 0;
+    let mut root_length : Option<usize> = None;
 
     if root {
         // gets the root length, so it can remove all the base folders
@@ -84,8 +84,12 @@ pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<
                 }
             }
 
-            if root_length < length {
-                root_length = length;
+            if let Some(rlength) = root_length {
+                if rlength > length {
+                    root_length = Some(length);
+                }
+            } else {
+                root_length = Some(length);
             }
         }
         
@@ -98,7 +102,7 @@ pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<
     for file in archive.entries()? {
         let mut file = file?;
         
-        let mut unpack_path : Option<PathBuf>;
+        let mut unpack_path : Option<PathBuf> = None;
         
         // checks if its a folder or a file
         // checks to see if the path ends in '/', then its a folder
@@ -109,15 +113,17 @@ pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<
         match file.header().path()?.to_str() {
             None => { return Err(format_err!("Can't get file from archive")); }
             Some(file_name) => {
+                if let Some(root_length) = root_length {
 
-                let mut new_file_path = des.clone();
-                new_file_path.push(file_name[root_length..].to_string());
-                // needs to create the folders, in case there are folders too
-                if let Some(parent) = new_file_path.parent() {
-                    fs::create_dir_all(parent)?;
+                    let mut new_file_path = des.clone();
+                    new_file_path.push(file_name[root_length..].to_string());
+                    // needs to create the folders, in case there are folders too
+                    if let Some(parent) = new_file_path.parent() {
+                        fs::create_dir_all(parent)?;
+                    }
+
+                    unpack_path = Some(new_file_path);
                 }
-
-                unpack_path = Some(new_file_path);
             }
         }
 

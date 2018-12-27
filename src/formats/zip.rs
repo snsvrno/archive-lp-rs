@@ -58,7 +58,7 @@ pub fn contains(archive : &PathBuf, file_name : &str) -> Result<bool,Error> {
 
 pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<PathBuf,Error> {
     let mut archive = zipcrate::ZipArchive::new(Cursor::new(buffer))?;
-    let mut root_length = 0;
+    let mut root_length : Option<usize> = None;
 
     // attempts to determine if the zip is actually inside redundant
     // folders, so we want to have the root of all the actual files
@@ -88,8 +88,12 @@ pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<
                     }
                 }
 
-                if root_length < length {
-                    root_length = length;
+                if let Some(rlength) = root_length {
+                    if rlength > length {
+                        root_length = Some(length);
+                    }
+                } else {
+                    root_length = Some(length);
                 }
             }
         }
@@ -105,7 +109,9 @@ pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<
             } 
 
             let mut new_file_path = des.clone();
-            new_file_path.push(file_in_zip.name()[root_length..].to_string());
+            if let Some(root_length) = root_length {
+                new_file_path.push(file_in_zip.name()[root_length..].to_string());
+            }
 
             let mut file_buf : Vec<u8> = Vec::new();
             file_in_zip.read_to_end(&mut file_buf)?;
