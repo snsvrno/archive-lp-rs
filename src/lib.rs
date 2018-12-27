@@ -6,6 +6,9 @@ extern crate xz2;
 extern crate flate2;
 extern crate tar as tarcrate;
 
+#[cfg(feature = "indicate")]
+extern crate indicatif;
+
 use std::path::{PathBuf, Path};
 use std::fs;
 

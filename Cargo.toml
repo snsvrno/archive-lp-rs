@@ -1,6 +1,6 @@
 [package]
 name = "archive-lp"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["snsvrno <snsvrno@tuta.io>"]
 
 license = "MIT"
@@ -23,3 +23,9 @@ xz2 = "0.1"
 
 failure = "0.1"
 log = "0.4"
+
+# for displaying progress when extracting
+indicatif = { version = "0.10", optional = true }
+
+[features]
+indicate = ['indicatif']

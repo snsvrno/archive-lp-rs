@@ -6,6 +6,9 @@ use std::fs;
 use std::path::PathBuf;
 use std::io::{Cursor,Read,Write};
 
+#[cfg(feature = "indicate")]
+extern crate indicatif;
+
 use zipcrate;
 
 pub fn extract(file : &PathBuf, des : &PathBuf) -> Result<PathBuf,Error> {
@@ -60,11 +63,21 @@ pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<
     let mut archive = zipcrate::ZipArchive::new(Cursor::new(buffer))?;
     let mut root_length : Option<usize> = None;
 
+    #[cfg(feature = "indicate")]
+    let bar = { 
+        let bar = indicatif::ProgressBar::new_spinner();
+        bar.set_message(&format!("Extracting archive.."));
+        bar
+    };
+
     // attempts to determine if the zip is actually inside redundant
     // folders, so we want to have the root of all the actual files
     // not just a folder with all the files inside of it.
     if root {
         for i in 0 .. archive.len() {
+
+            #[cfg(feature = "indicate")]
+            bar.set_message(&format!("Determining archive root, {} files",i));
 
             let mut file = archive.by_index(i)?;
 
@@ -99,7 +112,8 @@ pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<
         }
     }
 
-    for i in 0 .. archive.len() {
+    let archive_length = archive.len();
+    for i in 0 .. archive_length {
         if let Ok(mut file_in_zip) = archive.by_index(i) {
 
             // checks if its a folder or a file
@@ -111,6 +125,14 @@ pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<
             let mut new_file_path = des.clone();
             if let Some(root_length) = root_length {
                 new_file_path.push(file_in_zip.name()[root_length..].to_string());
+
+                // progress if enabled
+                #[cfg(feature = "indicate")]
+                bar.set_message(&format!("{} : {} / {}",
+                    file_in_zip.name()[root_length..].to_string(),
+                    i,
+                    archive_length
+                ));
             }
 
             let mut file_buf : Vec<u8> = Vec::new();
@@ -120,6 +142,8 @@ pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<
             if let Some(parent) = new_file_path.parent() {
                 fs::create_dir_all(parent)?;
             }
+
+            
 
             // creates the file now.
             let mut new_file = fs::File::create(&new_file_path)?;

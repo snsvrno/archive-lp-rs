@@ -5,6 +5,9 @@ use std::path::PathBuf;
 use std::fs;
 use std::io::Read;
 
+#[cfg(feature = "indicate")]
+extern crate indicatif;
+
 pub fn extract(file : &PathBuf, des : &PathBuf) -> Result<PathBuf,Error> {
     //! extracts the archive to the destination folder.
     
@@ -62,13 +65,28 @@ pub fn buffer_contains(buffer : &Vec<u8>, file_name : &str) -> Result<bool,Error
 pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<PathBuf,Error> {
     let mut archive = tarcrate::Archive::new(&buffer[..]);
     let mut root_length : Option<usize> = None;
+    
+
+    #[cfg(feature = "indicate")]
+    let bar = { 
+        let bar = indicatif::ProgressBar::new_spinner();
+        bar.set_message(&format!("Extracting archive.."));
+        bar
+    };
 
     if root {
         // gets the root length, so it can remove all the base folders
         // that aren't important to the data / archive.
 
+        #[cfg(feature = "indicate")]
+        let mut count = {
+            bar.set_message(&format!("Determining archive root, 0 files"));
+            0
+        };
+
         for file in archive.entries()? {
             let mut file = file?;
+
 
             // checks if its a folder or a file
             // checks to see if the path ends in '/', then its a folder
@@ -78,6 +96,13 @@ pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<
 
             let mut length = 0;
             if let Some(file_name) = file.header().path()?.to_str() {
+                // for the indicator
+                #[cfg(feature = "indicate")]
+                {
+                    count += 1;
+                    bar.set_message(&format!("Determining archive root, {} files",count));
+                }
+
                 let splits = file_name.split("/").collect::<Vec<_>>();
                 for i in 0 .. splits.len() - 1 {
                     length += splits[i].len() + 1;
@@ -99,6 +124,13 @@ pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<
         archive = tarcrate::Archive::new(&buffer[..]);
     }
 
+    #[cfg(feature = "indicate")]
+    let mut index = {
+        let number_of_files = archive.entries()?.collect::<Vec<_>>().len(); 
+        archive = tarcrate::Archive::new(&buffer[..]);
+        (0 , number_of_files)
+    };
+
     for file in archive.entries()? {
         let mut file = file?;
         
@@ -115,6 +147,16 @@ pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<
             Some(file_name) => {
                 if let Some(root_length) = root_length {
 
+                    #[cfg(feature = "indicate")]
+                    {
+                        index.0 += 1;
+                        bar.set_message(&format!("{} : {} / {}",
+                            file_name[root_length..].to_string(),
+                            index.0,
+                            index.1
+                        ));
+                    }
+
                     let mut new_file_path = des.clone();
                     new_file_path.push(file_name[root_length..].to_string());
                     // needs to create the folders, in case there are folders too
@@ -128,9 +170,13 @@ pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<
         }
 
         if let Some(path) = unpack_path { 
+
+
             file.unpack(path)?; 
         }
     }
 
+    #[cfg(feature = "indicate")]
+    bar.finish_with_message(&format!("Extract complete",));
     Ok(des.clone())
 }

@@ -15,3 +15,7 @@ Can do the following
 - extract archive to a directory: **archive_lp::extract_to()**
 - extract root of an archive to a directory: **archive_lp::extract_root_to()**
 - check if a file is in an archive: **archive_lp::contains_file()**
+
+## Optional Features
+
+- **indicate** : uses `indicatif` to show a progress spinner with some details during extraction. 
