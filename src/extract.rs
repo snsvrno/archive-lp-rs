@@ -1,9 +1,10 @@
-use failure::Error;
+use failure::{Error,format_err};
 use crate::{ utils, formats };
 use std::path::{PathBuf, Path};
 use std::fs;
+use log::{warn};
 
-pub fn extract_to<P:AsRef<Path>>(src : P, des : P) -> Result<PathBuf,Error>
+pub fn to<P:AsRef<Path>>(src : P, des : P) -> Result<PathBuf,Error>
     where std::path::PathBuf: std::convert::From<P>, P : std::fmt::Display + Copy, 
 {
     //! Extracts the archive to the destination folder.
@@ -53,7 +54,7 @@ pub fn extract_to<P:AsRef<Path>>(src : P, des : P) -> Result<PathBuf,Error>
 }
 
 
-pub fn extract_root_to<P:AsRef<Path>>(src : P, des : P) -> Result<PathBuf,Error>
+pub fn root_to<P:AsRef<Path>>(src : P, des : P) -> Result<PathBuf,Error>
     where std::path::PathBuf: std::convert::From<P>, P : std::fmt::Display + Copy, 
 {
     //! Extracts the root of the archive to the destination folder.

@@ -6,10 +6,12 @@ use std::fs;
 use std::path::PathBuf;
 use std::io::{Cursor,Read,Write};
 
-#[cfg(feature = "indicate")]
-extern crate indicatif;
+use log::trace;
 
-use zipcrate;
+#[cfg(feature = "indicate")]
+use indicatif;
+
+use zip as zipcrate;
 
 pub fn extract(file : &PathBuf, des : &PathBuf) -> Result<PathBuf,Error> {
     //! unzips the archive to the destination folder.
@@ -41,7 +43,7 @@ pub fn contains(archive : &PathBuf, file_name : &str) -> Result<bool,Error> {
     let mut zip = zipcrate::ZipArchive::new(Cursor::new(buffer))?;
 
     for i in 0 .. zip.len() {
-        let mut file = zip.by_index(i)?;
+        let file = zip.by_index(i)?;
 
         // checks if its a folder or a file
         // checks to see if the path ends in '/', then its a folder
@@ -79,7 +81,7 @@ pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<
             #[cfg(feature = "indicate")]
             bar.set_message(&format!("Determining archive root, {} files",i));
 
-            let mut file = archive.by_index(i)?;
+            let file = archive.by_index(i)?;
 
             // checks if its a folder or a file
             // checks to see if the path ends in '/', then its a folder

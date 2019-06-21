@@ -1,16 +1,23 @@
-#[macro_use] extern crate failure;
-#[macro_use] extern crate log;
-
-extern crate zip as zipcrate;
-extern crate xz2;
-extern crate flate2;
-extern crate tar as tarcrate;
-
-#[cfg(feature = "indicate")]
-extern crate indicatif;
-
 mod formats;
 mod utils;
 
-mod extract; pub use crate::extract::{ extract_to, extract_root_to };
+pub mod extract;
 mod read; pub use crate::read::contains_file;
+
+// remove these after removing the deprecated functions
+use failure::Error;
+use std::path::{ PathBuf, Path };
+
+#[deprecated(since="0.3.0", note="please use `extract::to` instead")]
+pub fn extract_to<P:AsRef<Path>>(src : P, des : P) -> Result<PathBuf,Error>
+    where std::path::PathBuf: std::convert::From<P>, P : std::fmt::Display + Copy, 
+{
+	crate::extract::to(src,des)
+}
+
+#[deprecated(since="0.3.0", note="please use `extract::root_to` instead")]
+pub fn extract_root_to<P:AsRef<Path>>(src : P, des : P) -> Result<PathBuf,Error>
+    where std::path::PathBuf: std::convert::From<P>, P : std::fmt::Display + Copy, 
+{
+	crate::extract::root_to(src,des)
+}

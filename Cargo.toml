@@ -1,15 +1,15 @@
 [package]
 name = "archive-lp"
-version = "0.2.3"
+version = "0.3.0"
 authors = ["snsvrno <snsvrno@tuta.io>"]
 
+edition = "2018"
 license = "MIT"
 description = "a library for easy interaction with multiple archive formats."
 repository = "https://github.com/snsvrno/archive-lp-rs"
 readme = "README.md"
 keywords = ["archive","xz","tar","gz","zip"]
 categories = ["filesystem"]
-
 exclude = [
     "/tests"
 ]
@@ -27,8 +27,8 @@ log = "0.4"
 # for displaying progress when extracting
 indicatif = { version = "0.10", optional = true }
 
-[features]
-indicate = ['indicatif']
-
 [dev-dependencies]
 env_logger = "0.6"
+
+[features]
+indicate = ['indicatif']

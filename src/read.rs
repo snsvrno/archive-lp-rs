@@ -1,4 +1,4 @@
-use failure::Error;
+use failure::{ Error, format_err };
 use crate::{ utils, formats };
 use std::path::{PathBuf, Path};
 

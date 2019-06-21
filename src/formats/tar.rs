@@ -1,12 +1,14 @@
-use failure::Error;
-use tarcrate;
+use failure::{Error, format_err};
+use tar as tarcrate;
 
 use std::path::PathBuf;
 use std::fs;
 use std::io::Read;
 
+use log::debug;
+
 #[cfg(feature = "indicate")]
-extern crate indicatif;
+use indicatif;
 
 pub fn extract(file : &PathBuf, des : &PathBuf) -> Result<PathBuf,Error> {
     //! extracts the archive to the destination folder.
@@ -48,7 +50,7 @@ pub fn buffer_contains(buffer : &Vec<u8>, file_name : &str) -> Result<bool,Error
 
     let mut archive = tarcrate::Archive::new(&buffer[..]);
     for file in archive.entries()? {
-        let mut file = file?;
+        let file = file?;
 
         // checks if its a folder or a file
         // checks to see if the path ends in '/', then its a folder
@@ -91,7 +93,7 @@ pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<
 
         for file in archive.entries()? {
 
-            let mut file = file?;
+            let file = file?;
 
             // checks if its a folder or a file, we ignore folders
             // checks to see if the path ends in '/', then its a folder

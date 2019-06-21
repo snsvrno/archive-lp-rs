@@ -1,12 +1,15 @@
-extern crate archive_lp as archive;
-#[macro_use] extern crate log; use log::LevelFilter;
-extern crate env_logger;
+use archive_lp as archive;
+use env_logger;
+use log::{error, info, trace};
 
 use std::fs;
 use std::path::PathBuf;
 
 fn init_log() {
-    if let Err(error) = env_logger::Builder::new().is_test(true).filter_level(LevelFilter::Trace).try_init() {
+    use log::LevelFilter;
+    use env_logger::Builder;
+
+    if let Err(error) = Builder::new().is_test(true).filter_level(LevelFilter::Trace).try_init() {
         trace!("Logger already initalized: {}",error.to_string());
     }
 }
@@ -15,7 +18,7 @@ fn init_log() {
 fn gz_tar_extract_a_file() {
     init_log();
 
-    match archive::extract_to("tests/test_archives/a-file.tar.gz", "tests/") {
+    match archive::extract::to("tests/test_archives/a-file.tar.gz", "tests/") {
         Ok(path) => { info!("Extracted to '{:?}'",path); },
         Err(error) => { error!("Extraction error: {}",error.to_string()); assert!(false); },
     }
@@ -31,7 +34,7 @@ fn gz_tar_extract_a_file() {
 fn gz_tar_extract_a_file_1() {
     init_log();
 
-    match archive::extract_to("tests/test_archives/1-folder-nest.tar.gz", "tests/") {
+    match archive::extract::to("tests/test_archives/1-folder-nest.tar.gz", "tests/") {
         Ok(path) => { info!("Extracted to '{:?}'",path); },
         Err(error) => { error!("Extraction error: {}",error.to_string()); assert!(false); },
     }
@@ -48,7 +51,7 @@ fn gz_tar_extract_a_file_1() {
 fn gz_tar_extract_a_file_root_2() {
     init_log();
 
-    match archive::extract_root_to("tests/test_archives/2-folders-nest.tar.gz", "tests/") {
+    match archive::extract::root_to("tests/test_archives/2-folders-nest.tar.gz", "tests/") {
         Ok(path) => { info!("Extracted to '{:?}'",path); },
         Err(error) => { error!("Extraction error: {}",error.to_string()); assert!(false); },
     }
@@ -64,7 +67,7 @@ fn gz_tar_extract_a_file_root_2() {
 fn gz_tar_extract_a_file_root_1() {
     init_log();
 
-    match archive::extract_root_to("tests/test_archives/1-folder-nest.tar.gz", "tests/") {
+    match archive::extract::root_to("tests/test_archives/1-folder-nest.tar.gz", "tests/") {
         Ok(path) => { info!("Extracted to '{:?}'",path); },
         Err(error) => { error!("Extraction error: {}",error.to_string()); assert!(false); },
     }
@@ -80,7 +83,7 @@ fn gz_tar_extract_a_file_root_1() {
 fn gz_tar_extract_a_file_root() {
     init_log();
 
-    match archive::extract_root_to("tests/test_archives/a-file.tar.gz", "tests/") {
+    match archive::extract::root_to("tests/test_archives/a-file.tar.gz", "tests/") {
         Ok(path) => { info!("Extracted to '{:?}'",path); },
         Err(error) => { error!("Extraction error: {}",error.to_string()); assert!(false); },
     }
