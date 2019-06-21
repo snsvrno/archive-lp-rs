@@ -100,20 +100,55 @@ fn zip_extract_a_file_root() {
 fn zip_check_file() {
     init_log();
 
-    match archive::contains_file("tests/test_archives/a-file.zip", "zip_a_file") {
+    match archive::read::contains_file("tests/test_archives/a-file.zip", "zip_a_file") {
         Ok(result) => assert!(result),
         Err(_) => assert!(false),
     }
-    match archive::contains_file("tests/test_archives/1-folder-nest.zip", "zip_1_folder_a_file") {
+    match archive::read::contains_file("tests/test_archives/1-folder-nest.zip", "zip_1_folder_a_file") {
         Ok(result) => assert!(result),
         Err(_) => assert!(false),
     }
-    match archive::contains_file("tests/test_archives/2-folders-nest.zip", "zip_2_folder_1_folder_a_file") {
+    match archive::read::contains_file("tests/test_archives/2-folders-nest.zip", "zip_2_folder_1_folder_a_file") {
         Ok(result) => assert!(result),
         Err(_) => assert!(false),
     }
-    match archive::contains_file("tests/test_archives/2-folders-nest.zip", "a_files") {
+    match archive::read::contains_file("tests/test_archives/2-folders-nest.zip", "a_files") {
         Ok(result) => assert!(result == false),
         Err(_) => assert!(false),
     }
+}
+
+#[test]
+fn create_a_zip() {
+    init_log();
+    
+    use std::fs::{create_dir_all, File};
+    use std::io::Write;
+
+    // makes some garbage to extract.
+    let garbage_file = PathBuf::from("zip_create/file.txt");
+    let file_content_set : String = String::from("this is some content for the file");
+    let garbage_root = garbage_file.parent().unwrap();
+    let _ = create_dir_all(&garbage_root);
+    match File::create(&garbage_file) {
+        Err(error) => { error!("Can't create file: {}",error.to_string()); assert!(false); }
+        Ok(mut file) => match file.write_all(file_content_set.as_bytes()) {
+            Err(error) => { error!("Can't write to file: {}",error.to_string()); assert!(false); }
+            Ok(_) => { }
+        }
+    }
+
+    // creates the archive
+    if let Err(error) = archive::create::zip(garbage_root,"tests/garbage.zip") { 
+        error!("Can't create the archive: {}",error.to_string());
+    }
+
+    // checks that the archive is correctly put together
+    let content = archive::read::get_file_contents("tests/garbage.zip","file.txt").unwrap();
+    assert_eq!(String::from_utf8_lossy(&content),file_content_set);
+
+    // cleanup
+    let _ = fs::remove_file("tests/garbage.zip");
+    let _ = fs::remove_file(&garbage_file);
+    let _ = fs::remove_dir(&garbage_root);
 }

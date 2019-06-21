@@ -36,3 +36,20 @@ pub fn contains_file<P:AsRef<Path>>(src : P, file : &str) -> Result< bool,Error>
         } 
     }
 }
+
+pub fn get_file_contents<P:AsRef<Path>>(src : P, file : &str) -> Result<Vec<u8>,Error>
+    where std::path::PathBuf: std::convert::From<P>, P : std::fmt::Display + Copy,
+{
+
+    let src_path : PathBuf = PathBuf::from(src);
+    
+    match src_path.extension() {
+        None => Err(format_err!("File '{:?}' has no extension, not a file?",src_path)),
+        Some(ext) => { 
+            match ext.to_str().unwrap() {
+                "zip" => formats::zip::get_file_contents(&src_path,file),
+                ext => Err(format_err!("Unknown extension type {:?}",ext)),
+            }
+        } 
+    }
+}

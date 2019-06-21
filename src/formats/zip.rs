@@ -1,6 +1,6 @@
 /// working with zip files, using 'zip-rs'
 
-use failure::Error;
+use failure::{Error, format_err};
 
 use std::fs;
 use std::path::PathBuf;
@@ -155,4 +155,30 @@ pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<
     }
 
     Ok(des.clone())
+}
+
+pub fn get_file_contents(src : &PathBuf, file_name : &str) -> Result<Vec<u8>,Error> {
+    //! gets the contents of a file in the zip
+    //! 
+    //! needs to be the actual filename, including the internal zip path.
+    
+    let mut file_contents : Vec<u8> = Vec::new();
+    let mut buffer : Vec<u8> = Vec::new();
+    let mut archive_file = fs::File::open(src)?;
+    archive_file.read_to_end(&mut buffer)?;
+
+    let mut zip = zipcrate::ZipArchive::new(Cursor::new(buffer))?;
+
+    for i in 0 .. zip.len() {
+        let mut file = zip.by_index(i)?;
+
+        if file.name() == file_name { 
+            file.read_to_end(&mut file_contents)?;
+        }
+    }
+
+    match file_contents.len() {
+        0 => Err(format_err!("{} not found in archive.",file_name)), 
+        _ => Ok(file_contents),
+    }
 }

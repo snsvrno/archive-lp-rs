@@ -4,7 +4,7 @@ use std::path::{PathBuf, Path};
 use std::fs;
 use log::{warn};
 
-pub fn to<P:AsRef<Path>>(src : P, des : P) -> Result<PathBuf,Error>
+pub fn to<P1:AsRef<Path>, P2:AsRef<Path>>(src : P1, des : P2) -> Result<PathBuf,Error>
     where std::path::PathBuf: std::convert::From<P>, P : std::fmt::Display + Copy, 
 {
     //! Extracts the archive to the destination folder.
@@ -54,7 +54,7 @@ pub fn to<P:AsRef<Path>>(src : P, des : P) -> Result<PathBuf,Error>
 }
 
 
-pub fn root_to<P:AsRef<Path>>(src : P, des : P) -> Result<PathBuf,Error>
+pub fn root_to<P1:AsRef<Path>, P2:AsRef<Path>>(src : P1, des : P2) -> Result<PathBuf,Error>
     where std::path::PathBuf: std::convert::From<P>, P : std::fmt::Display + Copy, 
 {
     //! Extracts the root of the archive to the destination folder.

@@ -100,19 +100,19 @@ fn xz_tar_extract_a_file_root() {
 fn xz_tar_check_file() {
     init_log();
 
-    match archive::contains_file("tests/test_archives/a-file.tar.xz", "tar_xz_a_file") {
+    match archive::read::contains_file("tests/test_archives/a-file.tar.xz", "tar_xz_a_file") {
         Ok(result) => assert!(result),
         Err(_) => assert!(false),
     }
-    match archive::contains_file("tests/test_archives/1-folder-nest.tar.xz", "tar_xz_1_folder_a_file") {
+    match archive::read::contains_file("tests/test_archives/1-folder-nest.tar.xz", "tar_xz_1_folder_a_file") {
         Ok(result) => assert!(result),
         Err(_) => assert!(false),
     }
-    match archive::contains_file("tests/test_archives/2-folders-nest.tar.xz", "tar_xz_2_folder_1_folder_a_file") {
+    match archive::read::contains_file("tests/test_archives/2-folders-nest.tar.xz", "tar_xz_2_folder_1_folder_a_file") {
         Ok(result) => assert!(result),
         Err(_) => assert!(false),
     }
-    match archive::contains_file("tests/test_archives/2-folders-nest.tar.xz", "a_files") {
+    match archive::read::contains_file("tests/test_archives/2-folders-nest.tar.xz", "a_files") {
         Ok(result) => assert!(result == false),
         Err(_) => assert!(false),
     }
