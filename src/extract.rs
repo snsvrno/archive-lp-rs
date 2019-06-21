@@ -15,20 +15,18 @@ pub fn extract_to<P:AsRef<Path>>(src : P, des : P) -> Result<PathBuf,Error>
     let src_path : PathBuf = PathBuf::from(src);
     let des_path : PathBuf = PathBuf::from(des);
 
-    info!("Extractiong '{:?}' to '{:?}'",src_path,des_path);
-
     if false == src_path.exists() { 
-        return Err(format_err!("Source file, '{}' does not exist.",src)); 
+        return Err(format_err!("Source file, {} does not exist.",src)); 
     }
 
     if false == des_path.exists() { 
-        warn!("Destination '{}' does not exist.",src);
+        warn!("Destination {} does not exist.",src);
         fs::create_dir_all(&des_path)?;
     }
 
     match src_path.extension() {
-        None => Err(format_err!("File '{}' has no extension, not a file?",src)),
-        Some(ext) => { 
+        None => Err(format_err!("File {} has no extension, not a file?",src)),
+        Some(ext) => {
             match ext.to_str().unwrap() {
                 "zip" => formats::zip::extract(&src_path,&des_path),
                 "tar" => formats::tar::extract(&src_path,&des_path),

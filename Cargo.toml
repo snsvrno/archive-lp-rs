@@ -29,3 +29,6 @@ indicatif = { version = "0.10", optional = true }
 
 [features]
 indicate = ['indicatif']
+
+[dev-dependencies]
+env_logger = "0.6"

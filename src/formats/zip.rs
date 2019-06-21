@@ -123,6 +123,7 @@ pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<
             } 
 
             let mut new_file_path = des.clone();
+            if root_length.is_none() { root_length = Some(0); }
             if let Some(root_length) = root_length {
                 new_file_path.push(file_in_zip.name()[root_length..].to_string());
 
@@ -143,9 +144,9 @@ pub fn extract_buffer(buffer : &Vec<u8>, des : &PathBuf, root : bool) -> Result<
                 fs::create_dir_all(parent)?;
             }
 
-            
 
             // creates the file now.
+            trace!("Going to try and make a file here: {:?}",new_file_path);
             let mut new_file = fs::File::create(&new_file_path)?;
             new_file.write_all(&file_buf)?;
         }

@@ -1,4 +1,4 @@
-#[macro_use] extern crate failure; use failure::Error;
+#[macro_use] extern crate failure;
 #[macro_use] extern crate log;
 
 extern crate zip as zipcrate;

@@ -1,4 +1,3 @@
-
 use failure::Error;
 
 use std::fs;
@@ -9,6 +8,8 @@ use flate2;
 
 pub fn decode(file : &PathBuf) -> Result<Vec<u8>,Error> {
     //! decodes a gz stream
+
+    debug!("Decoding {:?}",file);
 
     let mut buffer : Vec<u8> = Vec::new();
     let mut archive = fs::File::open(&file)?;
