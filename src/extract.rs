@@ -5,7 +5,8 @@ use std::fs;
 use log::{warn};
 
 pub fn to<P1:AsRef<Path>, P2:AsRef<Path>>(src : P1, des : P2) -> Result<PathBuf,Error>
-    where std::path::PathBuf: std::convert::From<P>, P : std::fmt::Display + Copy, 
+    where std::path::PathBuf: std::convert::From<P1>, P1 : std::fmt::Display + Copy,
+          std::path::PathBuf: std::convert::From<P2>, P2 : std::fmt::Display + Copy, 
 {
     //! Extracts the archive to the destination folder.
     //! 
@@ -55,7 +56,8 @@ pub fn to<P1:AsRef<Path>, P2:AsRef<Path>>(src : P1, des : P2) -> Result<PathBuf,
 
 
 pub fn root_to<P1:AsRef<Path>, P2:AsRef<Path>>(src : P1, des : P2) -> Result<PathBuf,Error>
-    where std::path::PathBuf: std::convert::From<P>, P : std::fmt::Display + Copy, 
+    where std::path::PathBuf: std::convert::From<P1>, P1 : std::fmt::Display + Copy,
+          std::path::PathBuf: std::convert::From<P2>, P2 : std::fmt::Display + Copy, 
 {
     //! Extracts the root of the archive to the destination folder.
     //! 
