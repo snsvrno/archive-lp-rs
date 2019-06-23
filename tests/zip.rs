@@ -139,7 +139,7 @@ fn create_a_zip() {
     }
 
     // creates the archive
-    if let Err(error) = archive::create::zip(garbage_root,"tests/garbage.zip") { 
+    if let Err(error) = archive::create::from(garbage_root,"tests/garbage.zip",archive::create::ArchiveFormat::Zip) { 
         error!("Can't create the archive: {}",error.to_string());
     }
 

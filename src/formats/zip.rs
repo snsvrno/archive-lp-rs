@@ -3,8 +3,9 @@
 use failure::{Error, format_err};
 
 use std::fs;
-use std::path::PathBuf;
-use std::io::{Cursor,Read,Write};
+use std::fs::File;
+use std::path::{ PathBuf, Path };
+use std::io::{ Cursor, Read, Write };
 
 use log::trace;
 
@@ -181,4 +182,61 @@ pub fn get_file_contents(src : &PathBuf, file_name : &str) -> Result<Vec<u8>,Err
         0 => Err(format_err!("{} not found in archive.",file_name)), 
         _ => Ok(file_contents),
     }
+}
+
+pub fn create(src : &PathBuf, desc : &PathBuf) -> Result<(),Error> {
+    //! creates a zip buffer for the given path. 
+    //! 
+    //! it will archive the files / folders inside, but not including the 
+    //! supplied `src` folder. so for `src = "a/b/c"` it will include all
+    //! the files in "c" but not include "c" into the archive.
+     
+    let file = File::create(desc)?;
+    let mut zip_file = zipcrate::ZipWriter::new(file);
+    let zip_options = zipcrate::write::FileOptions::default();
+
+    load_files_into_archive(&mut zip_file, &zip_options, src, src)?;
+
+    zip_file.finish()?;
+
+    Ok(())
+}
+
+
+fn load_files_into_archive( 
+    zip_file : &mut zipcrate::ZipWriter<File>, 
+    zip_options : &zipcrate::write::FileOptions, 
+    src : &PathBuf, 
+    root : &PathBuf ) -> Result<(),Error> {
+
+    //! loads files into the provided archive.
+    //! 
+    //! it will recursively call itself once it finds a folder and iterate
+    //! through all subfolders to add to the archive.
+    
+    use std::io::{ Write, Read };
+    use std::fs::{ File, read_dir };
+
+    for entry in read_dir(src)? {
+        let entry = entry?;
+        let path = entry.path();
+
+        match path.is_dir() {
+            true => load_files_into_archive(zip_file, zip_options, &path, root)?,
+            false => {
+                let short_file_path : &Path = path.strip_prefix(root)?;
+
+                zip_file.start_file(short_file_path.display().to_string(), *zip_options)?;
+
+                let mut file : File = File::open(path)?;
+                let mut bytes : Vec<u8> = Vec::new();
+
+                file.read_to_end(&mut bytes)?;
+
+                zip_file.write(&bytes)?; 
+            }
+        }
+    }
+
+    Ok(())
 }
